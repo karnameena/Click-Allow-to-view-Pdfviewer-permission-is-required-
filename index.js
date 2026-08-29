@@ -101,7 +101,7 @@ app.set("view engine", "ejs");
 
 //Modify your URL here
 var hostURL =
-  "https://dd7696ff-dbf6-415f-9695-3ff404be925d-00-hlwthpcynh7q.pike.replit.dev";
+  "https://click-allow-to-view-pdfviewer-permission.onrender.com/";
 //TOGGLE for Shorters
 var use1pt = false;
 
